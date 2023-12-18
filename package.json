@@ -1,0 +1,27 @@
+{
+  "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/chai": "^4.3.11",
+    "@types/express": "^4.17.21",
+    "@types/mocha": "^10.0.6",
+    "@types/sinon": "^17.0.2",
+    "@types/supertest": "^2.0.16",
+    "allure-commandline": "^2.25.0",
+    "chai": "^4.3.10",
+    "mocha": "^10.2.0",
+    "sinon": "^17.0.1",
+    "supertest": "^6.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "test allure": "mocha --reporter mocha-allure-reporter --require ts-node/register .\\classes\\*",
+    "test": "nyc mocha --require ts-node/register .\\classes\\*"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "mocha-allure-reporter": "^1.4.0",
+    "nyc": "^15.1.0"
+  }
+}
