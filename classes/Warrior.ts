@@ -41,7 +41,7 @@ export class Warrior {
     }
 
     isLowOnHealth(): boolean {
-        return this.health < 30; // Example threshold, adjust as needed
+        return this.health < 30; 
     }
 
     canAffordPurchase(cost: number): boolean {
@@ -54,17 +54,13 @@ export class Warrior {
 
     calculateTotalDamage(): number {
         let totalDamage = this.attack;
-
         if (this.isCriticalHit()) {
             totalDamage *= this.criticalFactor;
         }
-
         return totalDamage;
     }
 
     isSpecialAbilityEligible(): boolean {
         return this.strength > 7 && this.agility > 5 && this.intellect > 3;
     } 
-
-
 }

@@ -158,5 +158,205 @@ describe('Integration Tests', () => {
          expect(response.body).to.be.an('array').that.includes.members(['Warrior1', 'Warrior2', 'Warrior3']);
         // Add more assertions based on your response structure
     });
+
+    it('should check if a warrior is low on health', async () => {
+        // Assuming you have a warrior with ID 1 (created in a previous test)
+        const warriorId = 1;
+        const response = await request(app).get(`/warriors/${warriorId}/isLowOnHealth`);
+
+        expect(response.status).to.equal(200);
+        expect(response.body).to.be.an('object');
+        expect(response.body).to.have.property('isLowOnHealth');
+    });
+
+    it('should check if a warrior is eligible for a special ability', async () => {
+        // Assuming you have a warrior with ID 1 (created in a previous test)
+        const warriorId = 1;
+        const response = await request(app).get(`/warriors/${warriorId}/isSpecialAbilityEligible`);
+
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('isSpecialAbilityEligible');
+    });
+
+    it('should get information about a specific warrior using all functions', async () => {
+        // Create a new warrior with specific attributes
+        const newWarriorData = {
+            name: 'New Warrior',
+            strength: 8,
+            agility: 6,
+            intellect: 4,
+            luck: 5,
+            health: 40,
+            attack: 15,
+            attackSpeed: 1.5,
+            criticalChance: 0.2,
+            criticalFactor: 2.0,
+            money: 100,
+        };
+    
+        const createResponse = await request(app).
+        post('/warriors').
+        send(newWarriorData);
+    
+        // Assuming the creation was successful, proceed with the test
+        expect(createResponse.status).to.equal(201);
+        const warriorId = createResponse.body.id;
+        // Get information about the specific warrior using all functions
+        const response = await request(app).get(`/warriors/${warriorId}/info`);
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('isLowOnHealth').to.be.a('boolean');
+        expect(response.body).to.have.property('canAffordPurchase').to.be.a('boolean');
+        expect(response.body).to.have.property('isSpecialAbilityEligible').to.be.a('boolean');
+        expect(response.body).to.have.property('isCriticalHit').to.be.a('boolean');
+        expect(response.body).to.have.property('totalDamage').to.be.a('number');
+    
+        // Add assertions for particular values of properties
+        expect(response.body.isLowOnHealth).to.equal(newWarriorData.health < 30);
+        expect(response.body.canAffordPurchase).to.equal(newWarriorData.money >= 100); // Adjust the cost as needed
+        expect(response.body.isSpecialAbilityEligible).to.equal(
+            newWarriorData.strength > 7 && newWarriorData.agility > 5 && newWarriorData.intellect > 3
+        );
+        expect(response.body.totalDamage).to.equal(newWarriorData.attack);
+    });
+
+    it('should return 404 for information about a non-existing warrior', async () => {
+        const nonExistingWarriorId = 999;
+        const response = await request(app).get(`/warriors/${nonExistingWarriorId}/info`);
+
+        expect(response.status).to.equal(404);
+        expect(response.body).to.deep.equal({ error: 'Warrior not found' });
+    });
+
+    it('should check if a warrior is low on health (not found)', async () => {
+        const nonExistentWarriorId = 999; // Assuming there is no warrior with ID 999
+
+        const response = await request(app).get(`/warriors/${nonExistentWarriorId}/isLowOnHealth`);
+
+        expect(response.status).to.equal(404);
+        expect(response.body).to.have.property('error').that.equals('Warrior not found');
+    });
+
+    it('should check if a warrior can afford a purchase (warrior found and can afford)', async () => {
+        // Create a new warrior with sufficient money
+        const newWarriorData = {
+            name: 'Affordable Warrior',
+            money: 100,
+        };
+
+        const createResponse = await request(app).post('/warriors').send(newWarriorData);
+        const warriorId = createResponse.body.id;
+
+        const cost = 50; // Cost that the warrior can afford
+
+        const response = await request(app).get(`/warriors/${warriorId}/canAffordPurchase/${cost}`);
+
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('canAffordPurchase').that.equals(true);
+    });
+
+    it('should check if a warrior can afford a purchase (warrior found but cannot afford)', async () => {
+        // Create a new warrior with insufficient money
+        const newWarriorData = {
+            name: 'Expensive Warrior',
+            money: 10,
+        };
+
+        const createResponse = await request(app).post('/warriors').send(newWarriorData);
+        const warriorId = createResponse.body.id;
+
+        const cost = 50; // Cost that the warrior cannot afford
+
+        const response = await request(app).get(`/warriors/${warriorId}/canAffordPurchase/${cost}`);
+
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('canAffordPurchase').that.equals(false);
+    });
+
+    it('should check if a warrior can afford a purchase (warrior not found)', async () => {
+        const nonExistentWarriorId = 999; // Assuming there is no warrior with ID 999
+        const cost = 50;
+
+        const response = await request(app).get(`/warriors/${nonExistentWarriorId}/canAffordPurchase/${cost}`);
+
+        expect(response.status).to.equal(404);
+        expect(response.body).to.have.property('error').that.equals('Warrior not found');
+    });
+
+
+    it('should check if a warrior is eligible for a special ability (warrior found and eligible)', async () => {
+        // Create a new warrior with attributes making it eligible for special ability
+        const newWarriorData = {
+            name: 'Eligible Warrior',
+            strength: 8,
+            agility: 6,
+            intellect: 4,
+        };
+
+        const createResponse = await request(app).post('/warriors').send(newWarriorData);
+        const warriorId = createResponse.body.id;
+
+        const response = await request(app).get(`/warriors/${warriorId}/isSpecialAbilityEligible`);
+
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('isSpecialAbilityEligible').that.equals(true);
+    });
+
+    it('should check if a warrior is eligible for a special ability (warrior found but not eligible)', async () => {
+        // Create a new warrior with attributes making it not eligible for special ability
+        const newWarriorData = {
+            name: 'Non-Eligible Warrior',
+            strength: 5,
+            agility: 4,
+            intellect: 3,
+        };
+
+        const createResponse = await request(app).post('/warriors').send(newWarriorData);
+        const warriorId = createResponse.body.id;
+
+        const response = await request(app).get(`/warriors/${warriorId}/isSpecialAbilityEligible`);
+
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('isSpecialAbilityEligible').that.equals(false);
+    });
+
+    it('should check if a warrior is eligible for a special ability (warrior not found)', async () => {
+        const nonExistentWarriorId = 999; // Assuming there is no warrior with ID 999
+
+        const response = await request(app).get(`/warriors/${nonExistentWarriorId}/isSpecialAbilityEligible`);
+
+        expect(response.status).to.equal(404);
+        expect(response.body).to.have.property('error').that.equals('Warrior not found');
+    });
+
+    it('should calculate total damage for a warrior (warrior found)', async () => {
+        // Create a new warrior with specific attributes
+        const newWarriorData = {
+            name: 'Damage Warrior',
+            attack: 20,
+            criticalChance: 0.3,
+            criticalFactor: 2.0,
+        };
+
+        const createResponse = await request(app).post('/warriors').send(newWarriorData);
+        const warriorId = createResponse.body.id;
+
+        const response = await request(app).get(`/warriors/${warriorId}/calculateTotalDamage`);
+
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property('totalDamage').that.is.a('number');
+        // Add more assertions based on your implementation and expected values
+    });
+
+    it('should calculate total damage for a warrior (warrior not found)', async () => {
+        const nonExistentWarriorId = 999; // Assuming there is no warrior with ID 999
+
+        const response = await request(app).get(`/warriors/${nonExistentWarriorId}/calculateTotalDamage`);
+
+        expect(response.status).to.equal(404);
+        expect(response.body).to.have.property('error').that.equals('Warrior not found');
+    });
+
+
+
     // Add more integration tests for update and delete operations
 });

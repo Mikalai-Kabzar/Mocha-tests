@@ -11,7 +11,7 @@ app.use(bodyParser.json());
 
 // Sample in-memory database
 const warriors: Warrior[] = [];
-export { app };
+export { app, Server };
 // CRUD Routes
 
 // GET all warrior names
@@ -20,12 +20,91 @@ app.get('/warriors/names', (req: Request, res: Response) => {
     res.json(warriorNames);
 });
 
+// Check if a warrior is low on health
+app.get('/warriors/:id/isLowOnHealth', (req: Request, res: Response) => {
+    const warriorId = parseInt(req.params.id, 10);
+    const foundWarrior = warriors.find((warrior) => warrior.id === warriorId);
+
+    if (foundWarrior) {
+        const isLowOnHealth = foundWarrior.isLowOnHealth();
+        res.json({ isLowOnHealth });
+    } else {
+        res.status(404).json({ error: 'Warrior not found' });
+    }
+});
+
+// Check if a warrior can afford a purchase
+app.get('/warriors/:id/canAffordPurchase/:cost', (req: Request, res: Response) => {
+    const warriorId = parseInt(req.params.id, 10);
+    const cost = parseInt(req.params.cost, 10);
+
+    const foundWarrior = warriors.find((warrior) => warrior.id === warriorId);
+
+    if (foundWarrior) {
+        const canAffordPurchase = foundWarrior.canAffordPurchase(cost);
+        res.json({ canAffordPurchase });
+    } else {
+        res.status(404).json({ error: 'Warrior not found' });
+    }
+});
+
+// Check if a warrior is eligible for a special ability
+app.get('/warriors/:id/isSpecialAbilityEligible', (req: Request, res: Response) => {
+    const warriorId = parseInt(req.params.id, 10);
+    const foundWarrior = warriors.find((warrior) => warrior.id === warriorId);
+
+    if (foundWarrior) {
+        const isSpecialAbilityEligible = foundWarrior.isSpecialAbilityEligible();
+        res.json({ isSpecialAbilityEligible });
+    } else {
+        res.status(404).json({ error: 'Warrior not found' });
+    }
+});
+
+// Calculate total damage for a warrior
+app.get('/warriors/:id/calculateTotalDamage', (req: Request, res: Response) => {
+    const warriorId = parseInt(req.params.id, 10);
+    const foundWarrior = warriors.find((warrior) => warrior.id === warriorId);
+
+    if (foundWarrior) {
+        const totalDamage = foundWarrior.calculateTotalDamage();
+        res.json({ totalDamage });
+    } else {
+        res.status(404).json({ error: 'Warrior not found' });
+    }
+});
+
+app.get('/warriors/:id/info', (req: Request, res: Response) => {
+    const warriorId = parseInt(req.params.id, 10);
+    const foundWarrior = warriors.find((warrior) => warrior.id === warriorId);
+
+    if (foundWarrior) {
+        const info = {
+            id: foundWarrior.id,
+            name: foundWarrior.name,
+            isLowOnHealth: foundWarrior.isLowOnHealth(),
+            canAffordPurchase: foundWarrior.canAffordPurchase(100), // Adjust the cost as needed
+            isCriticalHit: foundWarrior.isCriticalHit(),
+            isSpecialAbilityEligible: foundWarrior.isSpecialAbilityEligible(),
+            totalDamage: foundWarrior.calculateTotalDamage(),
+            
+            // Add more properties as needed
+        };
+        res.json(info);
+    } else {
+        res.status(404).json({ error: 'Warrior not found' });
+    }
+});
+
 // Create a new warrior
 app.post('/warriors', (req: Request, res: Response) => {
-    const { id, name, strength, agility, intellect, luck, health, attack, attackSpeed, criticalChance, criticalFactor, money } = req.body;
+    const { name, strength, agility, intellect, luck, health, attack, attackSpeed, criticalChance, criticalFactor, money } = req.body;
+
+    // Generate a new ID based on the last ID in the list
+    const newId = warriors.length > 0 ? warriors[warriors.length - 1].id + 1 : 1;
 
     const newWarrior = new Warrior(
-        id,
+        newId,
         name,
         strength,
         agility,
