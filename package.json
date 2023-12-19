@@ -15,7 +15,7 @@
     "typescript": "^5.3.3"
   },
   "scripts": {
-    "test allure": "mocha --reporter mocha-allure-reporter --require ts-node/register .\\classes\\*",
+    "test_allure": "mocha --reporter mocha-allure-reporter --require ts-node/register .\\classes\\*",
     "test": "nyc mocha --require ts-node/register .\\classes\\*"
   },
   "dependencies": {

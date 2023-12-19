@@ -14,6 +14,12 @@ const warriors: Warrior[] = [];
 export { app };
 // CRUD Routes
 
+// GET all warrior names
+app.get('/warriors/names', (req: Request, res: Response) => {
+    const warriorNames = warriors.map((warrior) => warrior.name);
+    res.json(warriorNames);
+});
+
 // Create a new warrior
 app.post('/warriors', (req: Request, res: Response) => {
     const { id, name, strength, agility, intellect, luck, health, attack, attackSpeed, criticalChance, criticalFactor, money } = req.body;
