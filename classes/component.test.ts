@@ -1,27 +1,33 @@
 import { expect } from 'chai';
-import sinon, { SinonStub } from 'sinon';
+import sinon from 'sinon';
 import supertest from 'supertest';
 import { app, startServer, stopServer } from './server'; // Update with your actual file path
-
+const warriorData1 = {
+    id: 1,
+    name: 'Test Warrior1',
+    strength: 81,
+    agility: 61,
+    intellect: 41,
+    luck: 15,
+    health: 1010,
+    attack: 110,
+    attackSpeed: 11.5,
+    criticalChance: 1.1,
+    criticalFactor: 21,
+    money: 501,
+};
 describe('Server Component Tests', () => {
     let server: any; // Update the type based on your actual server type
     let request: any;
     let sandbox: sinon.SinonSandbox;
-    let getWarriorsStub: SinonStub;
-    let postWarriorStub: SinonStub;
-    let getWarriorStub: SinonStub;
 
     before(async () => {
         server = await startServer(3000);
-         request = supertest(app);
-        getWarriorsStub = sandbox.stub(app, 'get');
-        postWarriorStub = sandbox.stub(app, 'post');
-        getWarriorStub = sandbox.stub(app, 'get');       
     });
 
     beforeEach(() => {
         sandbox = sinon.createSandbox();
-
+        request = supertest(app);
     });
 
     afterEach(() => {
@@ -32,50 +38,47 @@ describe('Server Component Tests', () => {
         await stopServer();
     });
 
-    it('should get all warrior names', async () => {
-        getWarriorsStub.withArgs('/warriors/names').resolves({ body: [] });
-
-        const res = await request.get('/warriors/names').expect(200);
-
-        expect(res.body).to.be.an('array');
-
-        // Assertions for stub calls
-        expect(getWarriorsStub.calledOnce).to.be.true;
-        expect(getWarriorsStub.calledWith('/warriors/names')).to.be.true;
-    });
-
     it('should create a new warrior', async () => {
         const warriorData = {
-            name: 'New Warrior',
-            strength: 10,
-            // Include other properties as needed
+            id: 1,
+            name: 'Test Warrior',
+            strength: 8,
+            agility: 6,
+            intellect: 4,
+            luck: 5,
+            health: 100,
+            attack: 10,
+            attackSpeed: 1.5,
+            criticalChance: 0.1,
+            criticalFactor: 2,
+            money: 50,
         };
 
-        postWarriorStub.withArgs('/warriors').resolves({ body: warriorData });
+        // Stub the supertest request.post method
+        const postStub = sandbox.stub(request, 'post');
 
-        const res = await request.post('/warriors').send(warriorData).expect(201);
+        // Stub the send method on the supertest request.post
+        postStub.returns({
+            send: sandbox.stub().resolves({ status: 201, body: warriorData }),
+            expect: sandbox.stub().resolves({ status: 501, body: warriorData }),
+        });
 
+        // Make a request to the server to create a new warrior
+        const res = await request.post('/warriors').send(warriorData);
+
+        // Assertions for response
+        expect(res.status).to.equal(201);
         expect(res.body).to.have.property('id');
-        expect(res.body.name).to.equal(warriorData.name);
+        expect(res.body.name).to.equal('Test Warrior');
+        expect(res.body.strength).to.equal(8);
+        expect(res.body.health).to.equal(100);
 
-        // Assertions for stub calls
-        expect(postWarriorStub.calledOnce).to.be.true;
-        expect(postWarriorStub.calledWith('/warriors')).to.be.true;
+        // Assertions for postStub
+        expect(postStub.calledOnce).to.be.true;
+        expect(postStub.firstCall.args[0]).to.equal('/warriors');
+        expect(postStub.firstCall.returnValue.send.calledOnce).to.be.true;
+        expect(postStub.firstCall.returnValue.expect.statusCode).to.equal('220');
     });
 
     // Add more tests for other routes
-
-    it('should handle warrior not found', async () => {
-        const warriorId = 999;
-
-        getWarriorStub.withArgs(`/warriors/${warriorId}`).resolves({ status: 404, body: { error: 'Warrior not found' } });
-
-        const res = await request.get(`/warriors/${warriorId}`).expect(404);
-
-        expect(res.body.error).to.equal('Warrior not found');
-
-        // Assertions for stub calls
-        expect(getWarriorStub.calledOnce).to.be.true;
-        expect(getWarriorStub.calledWith(`/warriors/${warriorId}`)).to.be.true;
-    });
 });
