@@ -17,7 +17,7 @@
   "scripts": {
     "test_allure": "mocha --reporter mocha-allure-reporter --require ts-node/register .\\classes\\*",
     "test": "nyc mocha --require ts-node/register .\\classes\\*",
-    "test_component": "nyc mocha --require ts-node/register .\\classes\\component.test.ts",
+    "test_component": "nyc mocha --require ts-node/register .\\classes\\component.test.ts"
   },
   "dependencies": {
     "ava": "^6.0.1",
