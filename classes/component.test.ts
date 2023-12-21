@@ -43,16 +43,6 @@ const warriorData = {
     money: 50,
 };
 
-//const WarriorDataID = getWarriorDataID1;
-
-//const WarriorData = getWarriorData1;
-
-//const WarriorData = WarriorData;
-
-//const WarriorDataID = getWarriorDataID1;
-
-//const WarriorData = WarriorData;
-
 describe('Server Component Tests', () => {
 
     it('should create a new warrior', async () => {

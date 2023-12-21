@@ -4,7 +4,7 @@ var sinon = require("sinon");
 import 'mocha';
 import { Warrior } from './Warrior'; // Adjust the import path based on your project structure
 
-describe('Warrior Class', () => {
+describe('Warrior Class unit tests', () => {
     let myWarrior: Warrior;
 
     beforeEach(() => {
